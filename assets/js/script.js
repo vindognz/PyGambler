@@ -202,22 +202,23 @@ function finalizeCode() {
     window.codeMirrorEditor.setValue(obfuscated);
 }
 
+// #region Obfus. Effects
+
+// helper function to generate a random string, that is safe as python variable name
 function genSafeVarName(length) {
-    const safeChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let name = '';
-    // do {
-    //     name = '';
-    //     for (let i = 0; i < length; i++) {
-    //         name += safeChars.charAt(Math.floor(Math.random() * safeChars.length));
-    //     }
-    // } while (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name));
-    for (let i = 0; i < length; i++) {
-        name += safeChars.charAt(Math.round(Math.random() * safeChars.length))
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const allChars = letters + '0123456789';
+
+    if (length <= 0) return '';
+
+    let name = letters.charAt(Math.floor(Math.random() * letters.length));
+
+    for (let i = 1; i < length; i++) {
+        name += allChars.charAt(Math.floor(Math.random() * allChars.length));
     }
+
     return name;
 }
-
-// --- Obfuscation Effects ---
 
 // Renames all variables with random characters
 function obfuscateBanana(code, special) {
@@ -261,8 +262,8 @@ function obfuscateBanana(code, special) {
     return newCode;
 }
 
-// add random imports that aren't needed
 
+// list of a ton of random python libraries
 const pythonLibs = [
   "math", "random", "datetime", "time", "os", "sys", "functools", "itertools",
   "collections", "heapq", "bisect", "statistics", "decimal", "fractions",
@@ -279,9 +280,9 @@ const pythonLibs = [
   "faker", "string", "calendar", "this", "antigravity", "__future__", "webbrowser"
 ];
 
+// add random imports that aren't needed
 function obfuscateSeven(code, special) {
-
-    const possibles = special ? 10 : 5
+    const possibles = special ? 15 : 5
     const numoflibs = Math.floor(Math.random() * possibles) + 1;
     console.log(numoflibs);
 
@@ -293,7 +294,46 @@ function obfuscateSeven(code, special) {
     return code;
 }
 
+
+// generates a complicated looking expression that is just 1
+function generateComplicated1() {
+    const functions = [
+        x => `(${x}/${x})`,
+        x => `round((sin(${x})**2 + cos(${x})**2))`,
+        x => `round((sqrt(${x}**2)/${x}))`
+    ];
+
+    const v = ['x', 'y', 'z'][Math.floor(Math.random() * 3)];
+    const val = Math.floor(Math.random()*9)+2;
+
+    let e = functions[Math.floor(Math.random()*functions.length)](v);
+
+    if (Math.random() > 0.5) 
+        e = functions[Math.floor(Math.random()*functions.length)](`(${e})`);
+
+    const noise = ['+0', '-0', '*1', '/1', '+(3-3)', '+(9-9)'][Math.floor(Math.random()*6)]
+
+    const randomVar = genSafeVarName(8);
+
+    return [`from math import sin, cos, sqrt\n${v}=${val}\n${randomVar} = (${e}${noise})`, randomVar]
+}
+
+// indents a whole block of code by 1 tab (4 spaces)
+function indentWholeCodeBlock(inCode) {
+    return inCode
+        .split('\n')
+        .map(line => '    ' + line)
+        .join('\n');
+}
+
+// wrap the entire script in a 'if 1==1' but complicated looking
 function obfuscateCherry(code, special) {
+    const complicated1 = generateComplicated1();
+    const expression = complicated1[0];
+    const randomVar = complicated1[1];
+
+    code = expression + `\n\nif ${randomVar} == 1:\n${indentWholeCodeBlock(code)}`
+
     return code;
 }
 
@@ -321,6 +361,7 @@ function obfuscateMelon(code, special) {
     return code;
 }
 
+//#endregion
 
 const iconObfuscators = [
   obfuscateBanana,
