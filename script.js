@@ -1,11 +1,27 @@
+isSpinning = false;
+code = '';
+
 document.addEventListener('DOMContentLoaded', () => {
-    const input = document.getElementById('codeInput');
-    const output = document.getElementById('codeOutput');
+    window.codeMirrorEditor = CodeMirror.fromTextArea(document.getElementById('codeInput'), {
+        mode: 'python',
+        theme: 'vscode-dark', // You can use other themes too
+        lineNumbers: true,
+        indentUnit: 4,
+        tabSize: 4,
+    });
+
+    window.codeMirrorEditor.on('change', (instance) => {
+        const lineCount = instance.lineCount();
+        const characterCount = instance.getValue().length;
+        document.getElementById('tokenCount').textContent = Math.floor(lineCount * 10 + characterCount);
+    });
+
     const gambleButton = document.getElementById('gambleButton');
 
     gambleButton.addEventListener('click', () => {
-        output.value = input.value;
+        if (isSpinning || document.getElementById('tokenCount').textContent === "0") return; // Prevent multiple clicks while spinning
         rollAll();
+        beginGambleCode();
     });
 })
 
@@ -16,38 +32,232 @@ const icon_width = 79,
       indexes = [0, 0, 0],
       icon_map = ["banana", "seven", "cherry", "plum", "orange", "bell", "bar", "lemon", "melon"];
 
-const roll = (reel, offset=0) => {
-    const delta = (2 + offset) * num_icons + Math.round(Math.random() * num_icons);
-    const style = getComputedStyle(reel),
-            backgroundPositionY = parseFloat(style["background-position-y"]),
-            targetBackgroundPositionY = backgroundPositionY + delta * icon_height,
-            normTargetBackgroundPositionY = targetBackgroundPositionY % (num_icons * icon_height);
+const roll = (reel, offset = 0) => {
+    // Pick a random icon to land on
+    const targetIndex = Math.floor(Math.random() * num_icons);
+    // Randomize number of full spins (cycles)
+    const minSpins = 3 + offset;
+    const maxSpins = 6 + offset;
+    const spins = Math.floor(Math.random() * (maxSpins - minSpins + 1)) + minSpins;
+    // Calculate the final background position
+    const targetBackgroundPositionY = (spins * num_icons + targetIndex) * icon_height;
+    const normTargetBackgroundPositionY = (targetIndex * icon_height) % (num_icons * icon_height);
 
-    return new Promise((resolve, reject) => {
-        reel.style.transition = `background-position-y ${8 + delta * time_per_icon}ms cubic-bezier(.45, .05, .58, 1.09)`;
+    return new Promise((resolve) => {
+        const duration = 1200 + Math.random() * 800 + offset * 200;
+        reel.style.transition = `background-position-y ${duration}ms cubic-bezier(.45, .05, .58, 1.09)`;
         reel.style.backgroundPositionY = `${targetBackgroundPositionY}px`;
 
         setTimeout(() => {
             reel.style.transition = `none`;
-            reel.style.backgroundPositionY = `${normTargetBackgroundPositionY}px`
-            resolve(delta % num_icons)
-        }, 8 + delta * time_per_icon);
+            reel.style.backgroundPositionY = `${normTargetBackgroundPositionY}px`;
+            resolve(targetIndex);
+        }, duration);
     });
+};
+
+function scrambleText(text) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    return text.split('').map(c => c.match(/\s/g) ? c : chars[Math.floor(Math.random() * chars.length)]).join('');
 }
+
+// Animate scrambling and restoring the title
+function animateTitleScramble(original, duration = 1200) {
+    const titleElem = document.getElementById('titleContent');
+    let frame = 0;
+    const totalFrames = Math.floor(duration / 20);
+    let scrambleInterval = setInterval(() => {
+        titleElem.textContent = scrambleText(original);
+        frame++;
+        if (frame >= totalFrames) {
+            clearInterval(scrambleInterval);
+            // Gradually restore the title, one character at a time
+            let revealFrame = 0;
+            let waitFrame = 0;
+            let revealed = Array(original.length).fill('');
+            let revealInterval = setInterval(() => {
+                for (let i = 0; i <= revealFrame && i < original.length; i++) {
+                    revealed[i] = original[i];
+                }
+                // Scramble unrevealed chars
+                for (let i = revealFrame + 1; i < original.length; i++) {
+                    revealed[i] = scrambleText(original[i]);
+                }
+                titleElem.textContent = revealed.join('');
+                waitFrame++;
+                if (waitFrame >= 10) {
+                    revealFrame++;
+                    waitFrame = 0;
+                }
+                if (revealFrame >= original.length) {
+                    clearInterval(revealInterval);
+                    titleElem.textContent = original;
+                }
+            }, 20);
+        }
+    }, 20);
+}
+
+function playSound(id, pitch = 1.0) {
+    const sound = document.getElementById(id);
+    if (sound) {
+        sound.preservesPitch = false;
+        sound.currentTime = 0;
+        sound.playbackRate = pitch;
+        sound.play();
+    }
+}
+
+let spinCount = 0; // Add this at the top of your script
 
 function rollAll() {
+    isSpinning = true;
+    spinCount++; // Increment spin count
     const reelsList = document.querySelectorAll('.slots > .reel');
+    const titleElem = document.getElementById('titleContent');
+    const originalTitle = titleElem.textContent;
+
+    animateTitleScramble(originalTitle, 500);
+
+    spinStartTime = Date.now();
+
+    spinSound = () => {
+        playSound('blipSound', Math.random() * 0.1 + 1.2 + (Date.now() - spinStartTime)/2000);
+        if(isSpinning && Date.now() - spinStartTime < 1500) setTimeout(spinSound, (Date.now() - spinStartTime)/15 + 100);
+    };
+
+    spinSound();
+
+    // Rig the result on the third spin
+    let riggedResults = null;
+    if (spinCount === 3 || Math.random() < 0.1) { // 10% chance to rig
+        // Force a win: all reels show the same icon
+        const forcedIndex = Math.floor(Math.random() * num_icons);
+        riggedResults = [forcedIndex, forcedIndex, forcedIndex];
+    }
+
+    // If rigged, resolve rolls with forced values, else use normal roll
+    let rollPromises;
+    if (riggedResults) {
+        rollPromises = [...reelsList].map((reel, i) => 
+            new Promise(resolve => {
+                // Animate as usual, but always land on forcedIndex
+                const offset = i;
+                const forcedIndex = riggedResults[i];
+                const minSpins = 3 + offset;
+                const maxSpins = 6 + offset;
+                const spins = Math.floor(Math.random() * (maxSpins - minSpins + 1)) + minSpins;
+                const targetBackgroundPositionY = (spins * num_icons + forcedIndex) * icon_height;
+                const normTargetBackgroundPositionY = (forcedIndex * icon_height) % (num_icons * icon_height);
+                const duration = 1200 + Math.random() * 800 + offset * 200;
+                reel.style.transition = `background-position-y ${duration}ms cubic-bezier(.45, .05, .58, 1.09)`;
+                reel.style.backgroundPositionY = `${targetBackgroundPositionY}px`;
+                setTimeout(() => {
+                    reel.style.transition = `none`;
+                    reel.style.backgroundPositionY = `${normTargetBackgroundPositionY}px`;
+                    resolve(forcedIndex);
+                }, duration);
+            })
+        );
+    } else {
+        rollPromises = [...reelsList].map((reel, i) => roll(reel, i));
+    }
+
     Promise
-        .all( [... reelsList].map((reel, i) => roll(reel, i)))
-        .then((deltas) => {
+        .all(rollPromises)
+        .then((results) => {
+            results.forEach((index, i) => indexes[i] = index);
+            const iconNames = results.map(index => icon_map[index]);
+            console.log(`Rolled: [${results.join(', ')}] -> [${iconNames.join(', ')}]`);
 
-            deltas.forEach((delta, i) => indexes[i] = (indexes[i] + delta) % num_icons)
-
-            indexes.map((index) => { console.log(icon_map[index]) })
-
-            document.querySelector(".slots").classList.add("win");
-		    setTimeout(() => document.querySelector(".slots").classList.remove("win"), 1000)
+            if(results[0] === results[1] && results[1] === results[2]) {
+                document.querySelector(".slots").classList.add("win");
+                setTimeout(() => document.querySelector(".slots").classList.remove("win"), 1500);
+                playSound('ultraWinSound', Math.random() * 0.5 + 1.5);
+            }
+            else{
+                document.querySelector(".slots").classList.add("finish");
+                setTimeout(() => document.querySelector(".slots").classList.remove("finish"), 1000);
+                playSound('winSound', Math.random() * 0.2 + 1.1);
+            }
         })
+        .finally(() => {
+            isSpinning = false;
+            finalizeCode();
+        });
 }
 
-rollAll();
+function finalizeCode() {
+    const rolled = indexes.slice();
+    const allSame = rolled.every(i => i === rolled[0]);
+    let obfuscated = code;
+
+    if (allSame) {
+        // Special effect for three of a kind
+        obfuscated = iconObfuscators[rolled[0]](code, true);
+    } else {
+        // Apply all three effects in order
+        obfuscated = rolled.reduce((acc, iconIdx) => iconObfuscators[iconIdx](acc, false), code);
+    }
+    window.codeMirrorEditor.setValue(obfuscated);
+}
+
+// --- Obfuscation Effects ---
+
+function obfuscateBanana(code, special) {
+  return code;
+}
+
+function obfuscateSeven(code, special) {
+  return code;
+}
+
+function obfuscateCherry(code, special) {
+  return code;
+}
+
+function obfuscatePlum(code, special) {
+  return code;
+}
+
+function obfuscateOrange(code, special) {
+  return code;
+}
+
+function obfuscateBell(code, special) {
+    return code;
+}
+
+function obfuscateBar(code, special) {
+  return code;
+}
+
+function obfuscateLemon(code, special) {
+  return code;
+}
+
+function obfuscateMelon(code, special) {
+  return code;
+}
+
+
+const iconObfuscators = [
+  obfuscateBanana,
+  obfuscateSeven,
+  obfuscateCherry,
+  obfuscatePlum,
+  obfuscateOrange,
+  obfuscateBell,
+  obfuscateBar,
+  obfuscateLemon,
+  obfuscateMelon
+];
+
+
+
+function beginGambleCode() {
+    const tokenCount = document.getElementById('tokenCount').textContent;
+    code = window.codeMirrorEditor.getValue();
+
+    setInterval(() => isSpinning ? window.codeMirrorEditor.setValue(scrambleText(code)) : null, 100);
+}
