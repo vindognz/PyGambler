@@ -108,7 +108,7 @@ function playSound(id, pitch = 1.0) {
     }
 }
 
-let spinCount = 0; // Add this at the top of your script
+let spinCount = 0;
 
 function rollAll() {
     isSpinning = true;
@@ -205,23 +205,24 @@ function finalizeCode() {
 // --- Obfuscation Effects ---
 
 function obfuscateBanana(code, special) {
-  return code;
+
+    return code;
 }
 
 function obfuscateSeven(code, special) {
-  return code;
+    return code;
 }
 
 function obfuscateCherry(code, special) {
-  return code;
+    return code;
 }
 
 function obfuscatePlum(code, special) {
-  return code;
+    return code;
 }
 
 function obfuscateOrange(code, special) {
-  return code;
+    return code;
 }
 
 function obfuscateBell(code, special) {
@@ -229,15 +230,15 @@ function obfuscateBell(code, special) {
 }
 
 function obfuscateBar(code, special) {
-  return code;
+    return code;
 }
 
 function obfuscateLemon(code, special) {
-  return code;
+    return code;
 }
 
 function obfuscateMelon(code, special) {
-  return code;
+    return code;
 }
 
 
