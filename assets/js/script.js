@@ -202,12 +202,66 @@ function finalizeCode() {
     window.codeMirrorEditor.setValue(obfuscated);
 }
 
+function genSafeVarName(length) {
+    const safeChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let name = '';
+    // do {
+    //     name = '';
+    //     for (let i = 0; i < length; i++) {
+    //         name += safeChars.charAt(Math.floor(Math.random() * safeChars.length));
+    //     }
+    // } while (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name));
+    for (let i = 0; i < length; i++) {
+        name += safeChars.charAt(Math.floor(Math.random() * safeChars.length))
+    }
+    return name;
+}
+
 // --- Obfuscation Effects ---
 
+// Renames all variables with random characters
 function obfuscateBanana(code, special) {
+    // variable renaming
+    // \b([a-zA-Z_][a-zA-Z0-9_]*)\s*= matches variables declarations
+    // def\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\(([^)]*)\) gets function parameters
+    // for\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in gets variables used in for loops
+    const vars = new Set();
+    let match;
+    const assignRegex = /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*=/g;
+    while (match = assignRegex.exec(code)) vars.add(match[1]);
 
-    return code;
+    const funcParamRegex = /def\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\(([^)]*)\)/g;
+    while (match = funcParamRegex.exec(code)) {
+        const paramsString = match[1];
+        const paramsArray = paramsString.split(',');
+        for (let i = 0; i < paramsArray.length; i++) {
+            const param = paramsArray[i].trim();
+            if (param) {
+                vars.add(param);
+            }
+        }
+    }
+
+    const loopVarRegex = /for\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+in/g;
+    while (match = loopVarRegex.exec(code)) vars.add(match[1]);
+
+    console.log(vars)
+
+    const renameMap = {};
+    vars.forEach(v => {
+        renameMap[v] = genSafeVarName(special ? 16 : v.length);
+    });
+
+    let newCode = code;
+    Object.keys(renameMap).forEach(orig => {
+        const pattern = new RegExp('\\b' + orig + '\\b', 'g');
+        newCode = newCode.replace(pattern, renameMap[orig]);
+    });
+
+    return newCode;
 }
+
+// add random imports that aren't needed
 
 function obfuscateSeven(code, special) {
     return code;
