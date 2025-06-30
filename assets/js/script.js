@@ -212,7 +212,7 @@ function genSafeVarName(length) {
     //     }
     // } while (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name));
     for (let i = 0; i < length; i++) {
-        name += safeChars.charAt(Math.floor(Math.random() * safeChars.length))
+        name += safeChars.charAt(Math.round(Math.random() * safeChars.length))
     }
     return name;
 }
@@ -263,7 +263,33 @@ function obfuscateBanana(code, special) {
 
 // add random imports that aren't needed
 
+const pythonLibs = [
+  "math", "random", "datetime", "time", "os", "sys", "functools", "itertools",
+  "collections", "heapq", "bisect", "statistics", "decimal", "fractions",
+  "pathlib", "re", "json", "csv", "subprocess", "logging", "threading",
+  "copy", "pickle", "uuid", "secrets", "shutil", "inspect", "pprint",
+  "tokenize", "traceback", "argparse", "enum", "typing", "doctest",
+  "calendar", "platform", "webbrowser", "http", "cgi", "cProfile",
+  "importlib", "weakref", "string", "zoneinfo", "antigravity", "this",
+  "__future__", "numpy", "pandas", "matplotlib", "scipy", "sklearn",
+  "pytest", "black", "mypy", "pylint", "autopep8", "requests", "flask",
+  "django", "bs4", "httpx", "torch", "tensorflow", "transformers", "keras",
+  "rich", "tqdm", "pyfiglet", "colorama", "pyperclip", "tabulate", "pyyaml",
+  "pydantic", "pyjokes", "emoji", "pygal", "sympy", "pyttsx3", "playsound",
+  "faker", "string", "calendar", "this", "antigravity", "__future__", "webbrowser"
+];
+
 function obfuscateSeven(code, special) {
+
+    const possibles = special ? 10 : 5
+    const numoflibs = Math.floor(Math.random() * possibles) + 1;
+    console.log(numoflibs);
+
+    for (let i = 0; i < numoflibs; i++) {
+        const chosenLib = pythonLibs[Math.floor(Math.random() * pythonLibs.length)];
+        code = "import " + chosenLib + "\n" + code
+    }
+
     return code;
 }
 
