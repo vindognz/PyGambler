@@ -24,7 +24,7 @@ const roll = (reel, offset=0) => {
             normTargetBackgroundPositionY = targetBackgroundPositionY % (num_icons * icon_height);
 
     return new Promise((resolve, reject) => {
-        reel.style.transition = `background-position-y ${8 + delta * time_per_icon}ms`;
+        reel.style.transition = `background-position-y ${8 + delta * time_per_icon}ms cubic-bezier(.45, .05, .58, 1.09)`;
         reel.style.backgroundPositionY = `${targetBackgroundPositionY}px`;
 
         setTimeout(() => {
@@ -45,6 +45,8 @@ function rollAll() {
 
             indexes.map((index) => { console.log(icon_map[index]) })
 
+            document.querySelector(".slots").classList.add("win");
+		    setTimeout(() => document.querySelector(".slots").classList.remove("win"), 1000)
         })
 }
 
