@@ -11,10 +11,62 @@ html, body {
 }
 
 body {
-    background: linear-gradient(45deg, grey 0%, lightgrey 100%);
+    background: #181818;
+	color: white;
     display: flex;
     justify-content: center;
     align-items: center;
+	flex-direction: column;
+	gap: 1em;
+}
+
+#gambleButton{
+	padding: 0.5em 1em;
+	background: #313131;
+	border: 1px solid #3c3c3c;
+	color: white;
+	cursor: pointer;
+	border-radius: 3em;
+}
+#gambleButton:hover {
+	background: #3a3a3a;
+}
+
+.input{
+	width: 50vw;
+	height: 25vh;
+	margin-bottom: 50px;
+}
+/* OBSOLETE IF USING CODEMIRROR
+#codeInput{
+	resize: none;
+	background-color: #1f1f1f;
+	border: 1px solid #2b2b2b;
+	font-family: JetBrains Mono, monospace;
+	color: white;
+	outline: none;
+	padding: 1em;
+	border-radius: 1em;
+}
+#codeInput:focus {
+	border-color: #3c3c3c;
+	box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+}
+*/
+
+.midsection {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 1em;
+}
+
+#lineCount {
+	background-color: #181818;
+	border: 1px solid #2b2b2b;
+	padding: 0.3em;
+	border-radius: 0.4em;
+	text-align: center;
 }
 
 .title {
@@ -22,6 +74,13 @@ body {
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
+    font-size: 2em;
+}
+
+#titleContent {
+	color: white;
+	font-family: 'JetBrains Mono', monospace;
+	font-weight: bold;
     font-size: 2em;
 }
 
@@ -50,6 +109,16 @@ body {
 		animation: win 200ms steps(2, end) infinite;
 	}
 
+	@keyframes finish {
+		0% { background: linear-gradient(45deg, rgb(0, 153, 255) 0%, rgb(0, 195, 255) 100%); 
+		box-shadow: 0 0 80px rgb(0, 195, 255) }
+		100% { background: linear-gradient(45deg, grey 0%, lightgrey 100%); box-shadow: -2px 2px 3px rgba(black, 0.3); }
+	}
+
+	&.finish{
+		animation: finish 200ms steps(2, end) infinite;
+	}
+
 	.reel {
 		position: relative;
 		width: $icon_width;
@@ -74,3 +143,89 @@ body {
 
 	}
 }
+
+.cm-s-vscode-dark.CodeMirror {
+  background: #1f1f1f; // editor.background
+  color: #cccccc;      // editor.foreground
+}
+
+.cm-s-vscode-dark .CodeMirror-cursor {
+  border-left: 1px solid #aeafad; // editorCursor.foreground
+}
+
+.cm-s-vscode-dark .CodeMirror-gutters {
+  background: #181818; // editorGutter.background
+  border-right: 1px solid #2b2b2b; // editorGroupHeader.tabsBorder
+  color: #6e7681; // editorLineNumber.foreground
+}
+
+.cm-s-vscode-dark .CodeMirror-linenumber {
+  color: #6e7681; // editorLineNumber.foreground
+}
+
+.cm-s-vscode-dark .CodeMirror-activeline-background {
+  background: #3a3d41; // editor.inactiveSelectionBackground
+}
+
+.cm-s-vscode-dark div.CodeMirror-selected {
+  background: #264f78; // editor.selectionBackground
+}
+
+.cm-s-vscode-dark .CodeMirror-matchingbracket {
+  background-color: #3b514d;
+  color: #ffd700 !important; // editorBracketHighlight.foreground1
+}
+
+.cm-s-vscode-dark .CodeMirror-guttermarker {
+  color: #cccccc;
+}
+
+.cm-s-vscode-dark .CodeMirror-guttermarker-subtle {
+  color: #6e7681;
+}
+
+.cm-s-vscode-dark .CodeMirror-line::selection,
+.cm-s-vscode-dark .CodeMirror-line > span::selection,
+.cm-s-vscode-dark .CodeMirror-line > span > span::selection {
+  background: #264f78; // editor.selectionBackground
+}
+
+.cm-s-vscode-dark .CodeMirror-line::-moz-selection,
+.cm-s-vscode-dark .CodeMirror-line > span::-moz-selection,
+.cm-s-vscode-dark .CodeMirror-line > span > span::-moz-selection {
+  background: #264f78; // editor.selectionBackground
+}
+
+// Font
+.cm-s-vscode-dark {
+  font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace, serif;
+  font-size: 1em;
+}
+
+// Scrollbar (optional, for a more VS Code feel)
+.cm-s-vscode-dark .CodeMirror-scrollbar-filler,
+.cm-s-vscode-dark .CodeMirror-gutter-filler {
+  background-color: #1f1f1f;
+}
+
+.cm-s-vscode-dark span.cm-keyword        { color: #569CD6; } // def, return, if, else, etc.
+.cm-s-vscode-dark span.cm-operator       { color: #d4d4d4; }
+.cm-s-vscode-dark span.cm-variable       { color: #9CDCFE; }
+.cm-s-vscode-dark span.cm-variable-2     { color: #4EC9B0; }
+.cm-s-vscode-dark span.cm-variable-3     { color: #B8D7A3; }
+.cm-s-vscode-dark span.cm-builtin        { color: #DCDCAA; } // print, len, etc.
+.cm-s-vscode-dark span.cm-atom           { color: #B5CEA8; } // True, False, None
+.cm-s-vscode-dark span.cm-number         { color: #B5CEA8; }
+.cm-s-vscode-dark span.cm-def            { color: #DCDCAA; } // function/class name
+.cm-s-vscode-dark span.cm-string         { color: #CE9178; }
+.cm-s-vscode-dark span.cm-string-2       { color: #D7BA7D; }
+.cm-s-vscode-dark span.cm-comment        { color: #6A9955; font-style: italic; }
+.cm-s-vscode-dark span.cm-meta           { color: #9CDCFE; }
+.cm-s-vscode-dark span.cm-tag            { color: #569CD6; }
+.cm-s-vscode-dark span.cm-attribute      { color: #9CDCFE; }
+.cm-s-vscode-dark span.cm-qualifier      { color: #D7BA7D; }
+.cm-s-vscode-dark span.cm-property       { color: #9CDCFE; }
+.cm-s-vscode-dark span.cm-type           { color: #4EC9B0; }
+.cm-s-vscode-dark span.cm-error          { color: #F44747; background: #1e0010; }
+.cm-s-vscode-dark span.cm-bracket        { color: #D4D4D4; }
+.cm-s-vscode-dark span.cm-link           { color: #3794FF; text-decoration: underline; }
