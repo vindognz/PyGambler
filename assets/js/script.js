@@ -308,7 +308,7 @@ function generateComplicated1() {
 
     let e = functions[Math.floor(Math.random()*functions.length)](v);
 
-    if (Math.random() > 0.5) 
+    if (Math.random() > 0.75) 
         e = functions[Math.floor(Math.random()*functions.length)](`(${e})`);
 
     const noise = ['+0', '-0', '*1', '/1', '+(3-3)', '+(9-9)'][Math.floor(Math.random()*6)]
