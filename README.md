@@ -13,7 +13,7 @@ Massive thanks to [JelyMe314](https://github.com/JelyMe314) for his contribution
 Add a button for copying the changed code out (maybe)
 Special effect for cherry.
 
-Plum - encode all string literals as base64
+~~Plum - encode all string literals as base64~~
 
 Orange - add random functions that do a ton of 'complex' stuff but just pass / return 0 / have no implementations
 

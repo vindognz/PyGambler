@@ -130,7 +130,9 @@ function rollAll() {
 
     // Rig the result on the third spin
     let riggedResults = null;
-    // riggedResults = [8, 4, 4]
+    //#region rig here
+    //#endregion
+    riggedResults = [3, 3, 3]
     if (spinCount === 3 || Math.random() < 0.1) { // 10% chance to rig
         // Force a win: all reels show the same icon
         const forcedIndex = Math.floor(Math.random() * num_icons);
@@ -319,9 +321,17 @@ function obfuscateCherry(code, special) {
     return code;
 }
 
-function obfuscatePlum(code, special) {
-    // encode all string literals as base64
-    return code;
+// encode all strings as base64
+function obfuscatePlum(code) {
+    const stringRegex = /"((?:[^"{\\]|\\.|{[^}]*})*?)"/g;
+
+    return code.replace(stringRegex, (match, inner) => {
+        if (inner.includes('{') || inner.includes('}')) return match;
+
+        const base64Encoded = btoa(`"${inner}"`);
+
+        return `eval(__import__("base64").b64decode("${base64Encoded}").decode())`;
+    });
 }
 
 function obfuscateOrange(code, special) {
@@ -398,7 +408,6 @@ function obfuscateMelon(code, special) {
 
   return result;
 }
-
 
 //#endregion
 
