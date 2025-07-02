@@ -130,6 +130,7 @@ function rollAll() {
 
     // Rig the result on the third spin
     let riggedResults = null;
+    riggedResults = [8, 8, 8]
     if (spinCount === 3 || Math.random() < 0.1) { // 10% chance to rig
         // Force a win: all reels show the same icon
         const forcedIndex = Math.floor(Math.random() * num_icons);
@@ -312,6 +313,7 @@ function indentWholeCodeBlock(inCode) {
 
 // wrap the entire script in a 'if 1==1' but complicated looking
 function obfuscateCherry(code, special) {
+    // implement a special where it just does 'if a==b and b==c' but they are all just 1
     const complicated1 = generateComplicated1();
     const expression = complicated1[0];
     const randomVar = complicated1[1];
@@ -337,15 +339,38 @@ function obfuscateBell(code, special) {
 }
 
 function obfuscateBar(code, special) {
+    // jackpot maybe, might do all of them if i cant think of anything better
     return code;
 }
 
 function obfuscateLemon(code, special) {
+    // add classes with massive __init__ functions that do nothing
     return code;
 }
 
+// encode all the numbers as hex
 function obfuscateMelon(code, special) {
-    return code;
+  return code.replace(/-?\d+(\.\d+)?/g, match => {
+    const number = Number(match);
+    const isNegative = number < 0;
+    const absolute = Math.abs(number);
+
+    if (Number.isInteger(number)) {
+        let hexString = absolute.toString(16);
+        if (special && hexString.length < 16) {
+            hexString = hexString.padStart(16, '0');
+        }
+        return (isNegative ? '-' : '') +
+            `int(${[...hexString].map(ch => `chr(0x${ch.charCodeAt(0).toString(16)})`).join(' + ')}, 16)`;
+    } else {
+        let decString = absolute.toString();
+        if (special && decString.length < 16) {
+            decString += '0'.repeat(16 - decString.length);
+        }
+        return (isNegative ? '-' : '') +
+            `float(${[...decString].map(ch => `chr(0x${ch.charCodeAt(0).toString(16)})`).join(' + ')})`;
+    }
+  });
 }
 
 //#endregion
