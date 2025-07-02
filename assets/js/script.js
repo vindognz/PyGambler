@@ -130,7 +130,7 @@ function rollAll() {
 
     // Rig the result on the third spin
     let riggedResults = null;
-    riggedResults = [8, 4, 4]
+    // riggedResults = [8, 4, 4]
     if (spinCount === 3 || Math.random() < 0.1) { // 10% chance to rig
         // Force a win: all reels show the same icon
         const forcedIndex = Math.floor(Math.random() * num_icons);
