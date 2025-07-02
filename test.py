@@ -1,6 +1,6 @@
 import math
 
-PI = 3.14159
+PI = math.pi
 
 def circle_area(radius):
     area = PI * radius * radius
