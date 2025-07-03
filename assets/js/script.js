@@ -350,13 +350,12 @@ function obfuscateBar(code, special) {
 // add classes with massive __init__ functions that do nothing
 // just like initialize a bunch of random variables, maybe pulled from a wordlist then do nothing with them
 function obfuscateLemon(code, special) {
-    const className = special ? genSafeVarName(8) : genSafeVarName(16);
-    const numInits = Math.round(Math.random() * className.length)
+    const className = special ? genSafeVarName(16) : genSafeVarName(8);
+    const numInits = Math.floor(Math.random() * (className.length + 1));
 
     let inits = "    def __init__(self):\n";
     if (numInits === 0) {
-        inits += "        pass"
-        return `class ${className}():\n${inits}\n` + code;
+        inits += "       pass"
     }
 
     for (let i = 0; i < numInits; i++) {
