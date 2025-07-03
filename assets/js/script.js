@@ -132,7 +132,7 @@ function rollAll() {
     let riggedResults = null;
     //#region rig here
     //#endregion
-    riggedResults = [3, 3, 3]
+    riggedResults = [7, 7, 7]
     if (spinCount === 3 || Math.random() < 0.1) { // 10% chance to rig
         // Force a win: all reels show the same icon
         const forcedIndex = Math.floor(Math.random() * num_icons);
@@ -347,10 +347,27 @@ function obfuscateBar(code, special) {
     return code;
 }
 
+// add classes with massive __init__ functions that do nothing
+// just like initialize a bunch of random variables, maybe pulled from a wordlist then do nothing with them
 function obfuscateLemon(code, special) {
-    // add classes with massive __init__ functions that do nothing
-    // just like initialize a bunch of random variables, maybe pulled from a wordlist then do nothing with them
-    return code;
+    const className = special ? genSafeVarName(8) : genSafeVarName(16);
+    const numInits = Math.round(Math.random() * className.length)
+
+    let inits = "    def __init__(self):\n";
+    if (numInits === 0) {
+        inits += "        pass"
+        return `class ${className}():\n${inits}\n` + code;
+    }
+
+    for (let i = 0; i < numInits; i++) {
+        const length = special ? 8 : 4;
+        const initName = genSafeVarName(length);
+        const initValue = (Math.random() < 0.5) ? `"${genSafeVarName(length)}"` : Math.floor(1000 + Math.random() * (9 * 10**length));
+        const init = `    self.${initName} = ${initValue}`;
+        inits += `    ${init}\n`;
+    }
+
+    return `class ${className}():\n${inits}\n` + code;
 }
 
 // encode all the numbers as hex
