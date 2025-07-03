@@ -317,7 +317,7 @@ function obfuscateCherry(code, special) {
 }
 
 // encode all strings as base64
-function obfuscatePlum(code) {
+function obfuscatePlum(code, special) {
     const stringRegex = /"((?:[^"{\\]|\\.|{[^}]*})*?)"/g;
 
     return code.replace(stringRegex, (match, inner) => {
