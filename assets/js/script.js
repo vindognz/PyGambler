@@ -132,7 +132,7 @@ function rollAll() {
     let riggedResults = null;
     //#region rig here
     //#endregion
-    // riggedResults = [7, 7, 7]
+    riggedResults = [2, 2, 2]
     if (spinCount === 3 || Math.random() < 0.1) { // 10% chance to rig
         // Force a win: all reels show the same icon
         const forcedIndex = Math.floor(Math.random() * num_icons);
@@ -280,14 +280,14 @@ function obfuscateSeven(code, special) {
 }
 
 // generates a complicated looking expression that is just 1
-function generateComplicated1() {
+function generateComplicated1(xyz) {
     const functions = [
         x => `(${x}/${x})`,
         x => `round((sin(${x})**2 + cos(${x})**2))`,
         x => `round((sqrt(${x}**2)/${x}))`
     ];
 
-    const v = ['x', 'y', 'z'][Math.floor(Math.random() * 3)];
+    const v = xyz ? xyz : ['x', 'y', 'z'][Math.floor(Math.random() * 3)]
     const val = Math.floor(Math.random()*9)+2;
 
     let e = functions[Math.floor(Math.random()*functions.length)](v);
@@ -297,22 +297,27 @@ function generateComplicated1() {
 
     const randomVar = genSafeVarName(8);
 
-    return [`from math import sin, cos, sqrt\n${v}=${val}\n${randomVar} = (${e}${noise})`, randomVar]
+    // return [`from math import sin, cos, sqrt\n${v}=${val}\n${randomVar} = (${e}${noise})`, randomVar, v]
+    return [`(${e}${noise})`]
 }
 
 // wrap the entire script in a 'if 1==1' but complicated looking
 // ADD A SPECIAL EFFECT
 function obfuscateCherry(code, special) {
     // implement a special where it just does 'if a==b and b==c' but they are all just 1
-    const complicated1 = generateComplicated1();
-    const expression = complicated1[0];
-    const randomVar = complicated1[1];
+    const [expression1, randomVar1, v] = generateComplicated1();
+    const [expression2, randomVar2] = generateComplicated1(v);
+    const [expression3, randomVar3] = generateComplicated1(v);
 
-    code = expression + `\n\nif ${randomVar} == 1:\n${code
-        // indents the code block by 1 tab (4 spaces)
-        .split('\n')
-        .map(line => '    ' + line)
-        .join('\n')}`
+    if (special) {
+        
+    } else {
+        code = expression1 + `\n\nif ${randomVar1} == 1:\n${code
+            // indents the code block by 1 tab (4 spaces)
+            .split('\n')
+            .map(line => '    ' + line)
+            .join('\n')}`
+    }
 
     return code;
 }
@@ -331,9 +336,18 @@ function obfuscatePlum(code, special) {
     });
 }
 
+// add random functions that do a ton of 'complex' stuff but just pass at the end or return a value and have no implementations
+// def solveWorldHunger(), findWhoAsked(), goofy stuff like that
+const funnyFunctionNames = ["solveWorldHunger", "findWhoAsked", "makeCoffeeMagically", "deleteInternet", "predictLotteryNumbers", "summonRubberDuck", "fixAllBugs", "blameIntern", "getMotivated", "escapeMeeting", "cookPizzaInRAM", "enableLightsaberMode", "timeTravelToFriday", "sendFaxToMars", "hugYourCode", "screamIntoVoid", "seduceStackOverflow", "downloadMoreRAM", "teleportToOffice", "askManagerForRaise", "compileFeelings", "alignPlanets", "procrastinateEfficiently", "avoidNullPointer", "memeifyOutput", "crashForFun", "launchNuclearOption", "findWaldo", "teachDogToCode", "yeetIntoProduction"];
 function obfuscateOrange(code, special) {
-    // add random functions that do a ton of 'complex' stuff but just pass at the end or return a value and have no implementations
-    // def solveWorldHunger(), findWhoAsked(), goofy stuff like that
+    const funcName = Math.random() * funnyFunctionNames.length
+    const lines = special ? Math.floor(Math.random() * 10) + 6 : Math.floor(Math.random() * 8);
+
+    // just need to implement complicated function. maybe complicated string manipulation or math, idk
+
+    console.log(lines);
+    
+
     return code;
 }
 
