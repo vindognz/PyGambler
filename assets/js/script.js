@@ -132,7 +132,7 @@ function rollAll() {
     let riggedResults = null;
     //#region rig here
     //#endregion
-    riggedResults = [2, 2, 2]
+    riggedResults = [5, 4, 4]
     if (spinCount === 3 || Math.random() < 0.1) { // 10% chance to rig
         // Force a win: all reels show the same icon
         const forcedIndex = Math.floor(Math.random() * num_icons);
@@ -184,26 +184,37 @@ function rollAll() {
                 playSound('winSound', Math.random() * 0.2 + 1.1);
             }
         })
-        .finally(() => {
+        .finally(async () => {
             isSpinning = false;
-            finalizeCode();
+            await finalizeCode();
         });
 }
 
-function finalizeCode() {
-    const rolled = indexes.slice();
-    const allSame = rolled.every(i => i === rolled[0]);
-    let obfuscated = code;
+async function finalizeCode() {
+  const rolled = indexes.slice();
+  const allSame = rolled.every(i => i === rolled[0]);
+  let obfuscated = code;
 
-    if (allSame) {
-        // Special effect for three of a kind
-        obfuscated = iconObfuscators[rolled[0]](code, true);
+  // Helper to run obfuscator and await if it's Bell (async), else sync
+  async function runObfuscator(fn, codeArg, specialFlag) {
+    if (fn === obfuscateBell) {
+      return await obfuscateBell(codeArg, specialFlag);
     } else {
-        // Apply all three effects in order
-        obfuscated = rolled.reduce((acc, iconIdx) => iconObfuscators[iconIdx](acc, false), code);
+      return fn(codeArg, specialFlag);
     }
-    window.codeMirrorEditor.setValue(obfuscated);
+  }
+
+  if (allSame) {
+    obfuscated = await runObfuscator(iconObfuscators[rolled[0]], code, true);
+  } else {
+    for (const iconIdx of rolled) {
+      obfuscated = await runObfuscator(iconObfuscators[iconIdx], obfuscated, false);
+    }
+  }
+
+  window.codeMirrorEditor.setValue(obfuscated);
 }
+
 
 // #region Obfusc. Effects
 
@@ -336,15 +347,48 @@ function obfuscateOrange(code, special) {
 
     console.log(lines);
     
-
     return code;
 }
 
-function obfuscateBell(code, special) {
+let prompt = "You are a senior developer reviewing junior code. Your task is to add short, sarcastic, and funny inline comments to the code. Roast bad or inefficient code like a grumpy dev with too much caffeine. Be direct, snarky, and a little rude, but stay workplace-appropriate. Explain what each part of the code does, but mock it if it’s outdated, verbose, or inefficient. Keep comments in-line, using # for Python (or appropriate syntax). Output only the code with comments added—no extra explanation. Example style: '# this is the most inefficient possible way to add two strings'."
+
+async function getAIComments(fullPrompt) {
+    const response = await fetch(`https://ai.hackclub.com/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            messages: [{ role: 'user', content: fullPrompt }]
+        }),
+    });
+    
+    if (!response.ok) { throw new Error(`API Error: ${response.status} ${response.statusText}`); }
+
+    const data = await response.json();
+
+    return data.choices?.[0]?.message?.content || 'No response';
+}
+
+async function obfuscateBell(code, special) {
     // add random docstrings / comments?
     // probably pulled from a list of broad-ish comments that i can just slap around the code
     // "oh theres a blank line here? 50% chance to append a comment in there"
-    return code;
+    // getting an llm for this is prolly a good idea tbh
+
+    // const aiComments = getAIComments(prompt + code);
+    // console.log(aiComments);
+
+    prompt += special ? " You have to comment every line in the script." : "You don't have to comment every line, just sprinkle them around.";
+    prompt += " Now, here's the code to comment:\n\n"
+
+    try {
+        const raw = await getAIComments(prompt + code);
+        const clean = raw.replace(/^```[a-z]*\n/, '').replace(/\n```$/, '').trim();
+
+        return clean;
+    } catch (err) {
+        console.error(err);
+        return code; // fallback to original code on error
+    }
 }
 
 function obfuscateBar(code, special) {
