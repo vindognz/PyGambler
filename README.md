@@ -12,7 +12,7 @@
 Fix title breaking when you spam press the button
 
 **Special effects for:**
-`Cherry, Plum, Orange, Bell, Bar`
+`Plum, Orange, Bell, Bar`
 
 Orange - add random functions that do a ton of 'complex' stuff but just pass / return 0 / have no implementations
 

@@ -280,46 +280,35 @@ function obfuscateSeven(code, special) {
 }
 
 // generates a complicated looking expression that is just 1
-function generateComplicated1(xyz) {
+function generateComplicated1() {
     const functions = [
         x => `(${x}/${x})`,
         x => `round((sin(${x})**2 + cos(${x})**2))`,
         x => `round((sqrt(${x}**2)/${x}))`
     ];
 
-    const v = xyz ? xyz : ['x', 'y', 'z'][Math.floor(Math.random() * 3)]
-    const val = Math.floor(Math.random()*9)+2;
-
-    let e = functions[Math.floor(Math.random()*functions.length)](v);
+    let e = functions[Math.floor(Math.random()*functions.length)](Math.floor(Math.random()*9)+2);
     e = functions[Math.floor(Math.random()*functions.length)](`(${e})`);
 
     const noise = ['+0', '-0', '*1', '/1', '+(3-3)', '+(9-9)'][Math.floor(Math.random()*6)]
 
     const randomVar = genSafeVarName(8);
 
-    // return [`from math import sin, cos, sqrt\n${v}=${val}\n${randomVar} = (${e}${noise})`, randomVar, v]
     return [`(${e}${noise})`]
 }
 
 // wrap the entire script in a 'if 1==1' but complicated looking
-// ADD A SPECIAL EFFECT
 function obfuscateCherry(code, special) {
-    // implement a special where it just does 'if a==b and b==c' but they are all just 1
-    const [expression1, randomVar1, v] = generateComplicated1();
-    const [expression2, randomVar2] = generateComplicated1(v);
-    const [expression3, randomVar3] = generateComplicated1(v);
+    const exp1 = generateComplicated1();
+    const exp2 = generateComplicated1();
+    const exp3 = generateComplicated1();
+    const imports = "from math import sin, cos, sqrt"
+    const ifContents = special ? `if ${exp1} == ${exp2} and ${exp2} == ${exp3}` : `if ${exp1} == 1`;
 
-    if (special) {
-        
-    } else {
-        code = expression1 + `\n\nif ${randomVar1} == 1:\n${code
-            // indents the code block by 1 tab (4 spaces)
-            .split('\n')
-            .map(line => '    ' + line)
-            .join('\n')}`
-    }
-
-    return code;
+    return `${imports}\n\n${ifContents}:\n${code
+        .split('\n')
+        .map(line => '    ' + line)
+        .join('\n')}`;
 }
 
 // encode all strings as base64
