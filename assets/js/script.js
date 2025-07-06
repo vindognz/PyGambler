@@ -27,10 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const icon_width = 79,
       icon_height = 79,
-      num_icons = 9,
+      num_icons = 8,
       time_per_icon = 100,
       indexes = [0, 0, 0],
-      icon_map = ["banana", "seven", "cherry", "plum", "orange", "bell", "bar", "lemon", "melon"];
+      icon_map = ["banana", "seven", "cherry", "plum", "bell", "bar", "lemon", "melon"];
 
 const roll = (reel, offset = 0) => {
     // Pick a random icon to land on
@@ -123,7 +123,7 @@ function rollAll() {
 
     spinSound = () => {
         playSound('blipSound', Math.random() * 0.1 + 1.2 + (Date.now() - spinStartTime)/2000);
-        if(isSpinning && Date.now() - spinStartTime < 1500) setTimeout(spinSound, (Date.now() - spinStartTime)/15 + 100);
+        if(isSpinning && Date.now() - spinStartTime < 3000) setTimeout(spinSound, (Date.now() - spinStartTime)/15 + 100);
     };
 
     spinSound();
@@ -211,7 +211,6 @@ async function finalizeCode() {
 
   window.codeMirrorEditor.setValue(obfuscated);
 }
-
 
 // #region Obfusc. Effects
 
@@ -333,23 +332,10 @@ function obfuscatePlum(code, special) {
     });
 }
 
-// add random functions that do a ton of 'complex' stuff but just pass at the end or return a value and have no implementations
-// def solveWorldHunger(), findWhoAsked(), goofy stuff like that
-const funnyFunctionNames = ["solveWorldHunger", "findWhoAsked", "makeCoffeeMagically", "deleteInternet", "predictLotteryNumbers", "summonRubberDuck", "fixAllBugs", "blameIntern", "getMotivated", "escapeMeeting", "cookPizzaInRAM", "enableLightsaberMode", "timeTravelToFriday", "sendFaxToMars", "hugYourCode", "screamIntoVoid", "seduceStackOverflow", "downloadMoreRAM", "teleportToOffice", "askManagerForRaise", "compileFeelings", "alignPlanets", "procrastinateEfficiently", "avoidNullPointer", "memeifyOutput", "crashForFun", "launchNuclearOption", "findWaldo", "teachDogToCode", "yeetIntoProduction"];
-function obfuscateOrange(code, special) {
-    const funcName = Math.random() * funnyFunctionNames.length
-    const lines = special ? Math.floor(Math.random() * 10) + 6 : Math.floor(Math.random() * 8);
-
-    // just need to implement complicated function. maybe complicated string manipulation or math, idk
-
-    console.log(lines);
-    
-    return code;
-}
-
 // chat don't bully my prompt writing. it works ok?. thx
 let prompt = "You are a senior developer reviewing junior code. Your task is to add short, sarcastic, and funny inline comments to the code. Roast bad or inefficient code like a grumpy dev with too much caffeine. Be direct, snarky, and a little rude, but stay workplace-appropriate. Explain what each part of the code does, but mock it if it’s outdated, verbose, or inefficient. Keep comments in-line, using # for Python (or appropriate syntax). Output only the code with comments added—no extra explanation. Example style: '# this is the most inefficient possible way to add two strings'."
 
+// writes a bunch of snarky ai comments all throughout the code
 async function obfuscateBell(code, special) {
     async function getAIComments(fullPrompt) {
         const response = await fetch(`https://ai.hackclub.com/chat/completions`, {
@@ -435,9 +421,7 @@ subprocess.run([sys.executable, middle_path])
     `.trim();
 }
 
-
 // add classes with massive __init__ functions that do nothing
-// just like initialize a bunch of random variables, maybe pulled from a wordlist then do nothing with them
 function obfuscateLemon(code, special) {
     const className = special ? genSafeVarName(16) : genSafeVarName(8);
     const numInits = Math.floor(Math.random() * (className.length + 1));
@@ -520,7 +504,6 @@ const iconObfuscators = [
   obfuscateSeven,
   obfuscateCherry,
   obfuscatePlum,
-  obfuscateOrange,
   obfuscateBell,
   obfuscateBar,
   obfuscateLemon,
