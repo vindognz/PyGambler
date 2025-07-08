@@ -130,6 +130,7 @@ function rollAll() {
 
     // Rig the result on the third spin
     let riggedResults = null;
+    riggedResults = [2, 2, 2]
     if (spinCount === 3 || Math.random() < 0.1) { // 10% chance to rig
         // Force a win: all reels show the same icon
         const forcedIndex = Math.floor(Math.random() * num_icons);
@@ -189,10 +190,11 @@ function rollAll() {
 
 async function finalizeCode() {
   const rolled = indexes.slice();
+  const bellIndex = iconObfuscators.findIndex(fn => fn === obfuscateBell);
   const allSame = rolled.every(i => i === rolled[0]);
+
   let obfuscated = code;
 
-  // Helper to run obfuscator and await if it's Bell (async), else sync
   async function runObfuscator(fn, codeArg, specialFlag) {
     if (fn === obfuscateBell) {
       return await obfuscateBell(codeArg, specialFlag);
@@ -201,11 +203,22 @@ async function finalizeCode() {
     }
   }
 
-  if (allSame) {
-    obfuscated = await runObfuscator(iconObfuscators[rolled[0]], code, true);
+  if (allSame && rolled[0] === bellIndex) {
+    // If all are bell, run once with specialFlag true
+    obfuscated = await obfuscateBell(code, true);
   } else {
-    for (const iconIdx of rolled) {
-      obfuscated = await runObfuscator(iconObfuscators[iconIdx], obfuscated, false);
+    // Run all non-bell obfuscators in order
+    for (const idx of rolled) {
+      if (idx !== bellIndex) {
+        obfuscated = await runObfuscator(iconObfuscators[idx], obfuscated, false);
+      }
+    }
+
+    // Run all bell obfuscators last (if multiple, run in order)
+    for (const idx of rolled) {
+      if (idx === bellIndex) {
+        obfuscated = await obfuscateBell(obfuscated, false);
+      }
     }
   }
 
@@ -237,6 +250,10 @@ function obfuscateBanana(code, special) {
     let match;
     const assignRegex = /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*=/g;
     while (match = assignRegex.exec(code)) vars.add(match[1]);
+
+    const unsafe = ["suffix", "mode", "delete"];
+
+    unsafe.forEach(item => vars.delete(item));
 
     const funcParamRegex = /def\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\(([^)]*)\)/g;
     while (match = funcParamRegex.exec(code)) {
@@ -333,7 +350,7 @@ function obfuscatePlum(code, special) {
 }
 
 // chat don't bully my prompt writing. it works ok?. thx
-let prompt = "You are a senior developer reviewing junior code. Your task is to add short, sarcastic, and funny inline comments to the code. Roast bad or inefficient code like a grumpy dev with too much caffeine. Be direct, snarky, and a little rude, but stay workplace-appropriate. Explain what each part of the code does, but mock it if it’s outdated, verbose, or inefficient. Keep comments in-line, using # for Python (or appropriate syntax). Output only the code with comments added—no extra explanation. Example style: '# this is the most inefficient possible way to add two strings'."
+let prompt = "You are a senior developer reviewing junior code. Your task is to add short, sarcastic, and funny inline comments to the code. Roast bad or inefficient code like a grumpy dev with too much caffeine. Be direct, snarky, and a little rude, but stay workplace-appropriate. Explain what each part of the code does, but mock it if it’s outdated, verbose, or inefficient. Keep comments in-line, using # for Python (or appropriate syntax). Output only the code with comments added—no extra explanation. Example style: '# this is the most inefficient possible way to add two strings'. Do not 'fix' the code in any way, but stick purely to comments."
 
 // writes a bunch of snarky ai comments all throughout the code
 async function obfuscateBell(code, special) {
@@ -353,7 +370,7 @@ async function obfuscateBell(code, special) {
         return data.choices?.[0]?.message?.content || 'No response';
     }
 
-    prompt += special ? " You have to comment every line in the script." : "You don't have to comment every line, just sprinkle them around.";
+    prompt += special ? " You have to comment every line in the script." : " You don't have to comment every line, just sprinkle them around.";
     prompt += " Now, here's the code to comment:\n\n"
 
     try {
@@ -450,11 +467,23 @@ function obfuscateMelon(code, special) {
   const numberRegex = /^-?\d+(\.\d+)?/;
 
   while (i < code.length) {
+    // Skip obfuscation if "base64" or "b64" is found at current position
+    if (code.startsWith('base64', i)) {
+      result += 'base64';
+      i += 'base64'.length;
+      continue;
+    }
+    if (code.startsWith('b64', i)) {
+      result += 'b64';
+      i += 'b64'.length;
+      continue;
+    }
+
     // check if its at a chr(0x...) and skip over it
     if (code.startsWith('chr(0x', i)) {
       const end = code.indexOf(')', i);
       if (end !== -1) {
-        // copy the chr(0x...) without obfuscation and skip
+        // copy the thingy without obfuscation and skip
         result += code.slice(i, end + 1);
         i = end + 1;
         continue;

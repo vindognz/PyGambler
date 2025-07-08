@@ -9,7 +9,7 @@
 **Massive thanks to [JelyMe314](https://github.com/JelyMe314) for his contributions.**
 
 # To-do:
-Fix title breaking when you spam press the button
+Fix title breaking (and bells) when you spam press the button
 
 **Special effects for:**
 `Plum`
