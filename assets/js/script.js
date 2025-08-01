@@ -1,6 +1,19 @@
 isSpinning = false;
 code = '';
 
+
+function jankRun() {
+    if (isSpinning) return; // Prevent multiple clicks while spinning
+    if (document.getElementById('tokenCount').textContent === "0") {
+        alert("you should add some code to gamble lmao");
+        return;
+    }
+
+    rollAll();
+    beginGambleCode();
+
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     window.codeMirrorEditor = CodeMirror.fromTextArea(document.getElementById('codeInput'), {
         mode: 'python',
@@ -15,6 +28,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const characterCount = instance.getValue().length;
         document.getElementById('tokenCount').textContent = Math.floor(lineCount * 10 + characterCount);
     });
+
+
+    const jankRunP = document.getElementById("titleContent");
+
+    jankRunP.addEventListener('click', jankRun);
 
     const gambleButton = document.getElementById('gambleButton');
 
