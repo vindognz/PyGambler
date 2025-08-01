@@ -19,7 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const gambleButton = document.getElementById('gambleButton');
 
     gambleButton.addEventListener('click', () => {
-        if (isSpinning || document.getElementById('tokenCount').textContent === "0") return; // Prevent multiple clicks while spinning
+        if (isSpinning) return; // Prevent multiple clicks while spinning
+        if (document.getElementById('tokenCount').textContent === "0") {
+            alert("you should add some code to gamble lmao");
+            return;
+        }
         rollAll();
         beginGambleCode();
     });
